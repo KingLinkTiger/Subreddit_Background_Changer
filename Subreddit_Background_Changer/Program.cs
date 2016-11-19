@@ -110,25 +110,51 @@ namespace Subreddit_Background_Changer
             if (!File.Exists(tempPath))
             {
 
-                int totalx = 0;
-                int totaly = 0;
+
 
                 int numScreens = Screen.AllScreens.Length;
                 int lastWidth = 0;
+
+
+                int maxX = 0;
+                int minX = 0;
+
+                int maxY = 0;
+                int minY = 0;
 
                 foreach (var s in Screen.AllScreens)
                 {
                     Rectangle res = s.Bounds;
 
-                    totalx += Math.Abs(res.Width);
-                    if (res.Height > totaly)
+                    if((res.X + res.Width) > maxX)
                     {
-                        totaly = Math.Abs(res.Height);
+                        maxX = res.X + res.Width;
                     }
 
-                    int mwidth = res.Width;
-                    int mheight = res.Height;
+                    if(res.X < minX)
+                    {
+                        minX = res.X;
+                    }
+                    
+                    if((res.Y + res.Height) > maxY)
+                    {
+                        maxY = res.Y + res.Height;
+                    }
+
+                    if(res.Y < minY)
+                    {
+                        minY = res.Y;
+                    }
+
+                    Console.WriteLine("X: " + res.X + ", Y: " + res.Y);
+                    Console.WriteLine("Width: " + res.Width + ", Y: " + res.Height);
                 }
+
+
+
+                int totalx = maxX+Math.Abs(minX);
+                int totaly = maxY+Math.Abs(minY);
+
 
                 Console.WriteLine("X: " + totalx + ", Y: " + totaly);
 
@@ -170,7 +196,7 @@ namespace Subreddit_Background_Changer
                     int mwidth = res.Width;
                     int mheight = res.Height;
 
-
+                  
 
 
                     //imageURLs[i] = getImageFromURL((String)results["data"]["children"][i]["data"]["url"]);
@@ -210,7 +236,10 @@ namespace Subreddit_Background_Changer
                     Image tmp = Image.FromStream(stream);
 
 
-                    int xPos = (lastWidth * i);
+                    //int xPos = (lastWidth * i);
+                    int xPos = res.X + Math.Abs(minX);
+                    int yPos = res.Y + Math.Abs(minY);
+      
 
                     tmp.Save(todaysFolder + i + ".jpg");
 
@@ -218,7 +247,7 @@ namespace Subreddit_Background_Changer
                     {
                         Image imgStream = resizeImage(tmp, mheight, mwidth);
 
-                        g.DrawImage(imgStream, new Point(xPos, 0));
+                        g.DrawImage(imgStream, new Point(xPos, yPos));
 
                         //imgStream.Save(@"C:\Users\Ryan\Desktop\TempWallapapers\" + i + ".jpg");
                     }
@@ -245,7 +274,7 @@ namespace Subreddit_Background_Changer
                         //Console.WriteLine("xPos: " + (int)(xPos + ((mwidth - (tmp.Width * scale)) / 2)));
 
 
-                        g.DrawImage(tmp, new Point((int)(xPos + ((mwidth - (tmp.Width * scale)) / 2)), (int)((mheight - (tmp.Height * scale)) / 2)));
+                        g.DrawImage(tmp, new Point((int)(xPos + ((mwidth - (tmp.Width * scale)) / 2)), (int)(yPos + (mheight - (tmp.Height * scale)) / 2)));
                     }
 
                     stream.Close();
