@@ -267,14 +267,14 @@ namespace Subreddit_Background_Changer
                             scale = Math.Min(tmp.HorizontalResolution, tmp.VerticalResolution) / 96;
                         }
 
-
+                        Image imgStream = resizeImage(tmp, (int)(tmp.Height * scale), (int)(tmp.Width * scale));
 
                         //Console.WriteLine("Scale: " + scale);
 
                         //Console.WriteLine("xPos: " + (int)(xPos + ((mwidth - (tmp.Width * scale)) / 2)));
 
 
-                        g.DrawImage(tmp, new Point((int)(xPos + ((mwidth - (tmp.Width * scale)) / 2)), (int)(yPos + (mheight - (tmp.Height * scale)) / 2)));
+                        g.DrawImage(imgStream, new Point((int)(xPos + ((mwidth - (imgStream.Width)) / 2)), (int)(yPos + (mheight - (imgStream.Height)) / 2)));
                     }
 
                     stream.Close();
