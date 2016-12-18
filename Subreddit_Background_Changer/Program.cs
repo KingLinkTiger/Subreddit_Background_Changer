@@ -496,12 +496,12 @@ namespace Subreddit_Background_Changer
                 //Regex imgurRegex = new Regex(@"http:\/\/(?:i\.imgur\.com\/(?<id>.*?)\.(?:jpg|png|gif)|imgur\.com\/(?:gallery\/)?)$");
                 //Regex imgurRegex = new Regex(@"^https?:\/\/(\w+\.)?imgur.com\/(\w*\d\w*)+(\.[a-zA-Z]{3})?$");
                 Regex imgurRegex = new Regex(@"((http(s?):\/\/)?imgur\.com\/[a-zA-Z0-9]{6,8})(?!\.jpg|\.gif|\.gifv|\.png)(?:[^a-zA-Z0-9]|$)");
-
-
                 string imgurID = new Uri(url).Segments.Last();
-
                 Match imgurMatch = imgurRegex.Match(url);
 
+                //Check if flikr URL
+                Regex flickrRegex = new Regex(@"(http(s?):\/\/)?(www.)?(flickr.com)");
+                Match flickrMatch = flickrRegex.Match(url);
 
                 //Console.WriteLine("Success: " + imgurMatch.Success + "  ID: " + url);
 
@@ -584,6 +584,64 @@ namespace Subreddit_Background_Changer
 
                     }
                     */
+
+
+                }
+                else if (flickrMatch.Success)
+                {
+                    //The image is a flickr link and we need to use the API
+
+
+                    //Process URL to get photo_id
+                    Regex flickrRegex2 = new Regex(@"([0-9]{11})");
+                    Match flickrMatch2 = flickrRegex2.Match(url);
+                    if (flickrMatch2.Success)
+                    {
+                        String flickrPhotoID = flickrMatch2.Groups[1].Value;
+
+
+                        String apiURL = " https://api.flickr.com/services/rest/?method=flickr.photos.getSizes&api_key=2b38b7503ce7cbf59485786ad7dbfa6c&photo_id=" + flickrPhotoID + "&format=json&nojsoncallback=1";
+
+                        //Request flikr images 
+                        HttpWebRequest webRequest = (HttpWebRequest)WebRequest.Create(apiURL);
+                        Stream response = webRequest.GetResponse().GetResponseStream();
+                        StreamReader reader = new StreamReader(response);
+                        string responseFromServer = reader.ReadToEnd();
+
+
+                        Console.WriteLine(responseFromServer);
+
+                        reader.Close();
+                        response.Close();
+
+                        var results = JsonConvert.DeserializeObject<dynamic>(responseFromServer);
+
+
+                        int largestResolution = 0;
+                        String largestImageURL = "";
+
+
+
+                        foreach(dynamic size in results["sizes"]["size"])
+                        {
+                            
+                            if((int)size["height"] * (int)size["width"] > largestResolution)
+                            {
+                                largestImageURL = (String)size["source"];
+                                largestResolution = (int)size["height"] * (int)size["width"];
+                            }
+                        }
+
+                        return Uri.UnescapeDataString(largestImageURL);
+
+                        
+                    }
+                    else
+                    {
+                        Console.WriteLine("Something done goofed with the Flickr image you twat");
+                        return "DERP";
+                    }
+
 
 
                 }
